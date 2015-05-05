@@ -22,8 +22,13 @@ function send (data) {
 }
 
 function received (data) {
-    if (data[0] === "line") {
+    switch(data[0]) {
+    case "line":
 	draw(data[1][0], data[1][1]);
+	break;
+    case "clientlist":
+	$("#clientlist")[0].innerHTML = data[1];
+	break;
     }
 }
 

@@ -11,14 +11,24 @@ function get (request, response) {
     switch (url.parse(request.url)["pathname"]) {
     case "/":
     case "/index.html":
+	response.setHeader("Content-Type", "text/html");
 	response.end(index);
 	break;
     case "/client.js":
+	response.setHeader("Content-Type", "text/javascript");
 	response.end(client);
 	break;
     default:
 	response.statusCode = 404;
 	response.end();
+    }
+}
+
+function forEachClient (f) {
+    for (var c in clients) {
+	if (clients.hasOwnProperty(c)) {
+	    f(c, clients[c]);
+	}
     }
 }
 
@@ -31,19 +41,27 @@ function post (request, response) {
 	var data = JSON.parse(chunks);
 	var id = request.headers["host"] + " " + request.headers["user-agent"];
 	if (data[0] !== "poll") {
-	    for (var c in clients) {
-		if (clients.hasOwnProperty(c) && c !== id) {
-		    clients[c].push(data);
+	    forEachClient(function (cname, cmsgs) {
+		if (cname !== id) {
+		    cmsgs.push(data);
 		}
-	    }
+	    });
 	}
 	response.setHeader("Content-Type", "text/plain");
 	if (clients[id]) {
 	    response.end(JSON.stringify(clients[id]));
+	    clients[id] = [];
 	} else {
+	    clients[id] = [];
+	    var clist = ""
+	    forEachClient(function (cname, cmsgs) {
+		clist = clist + cname + "<br>";
+	    });
+	    forEachClient(function (cname, cmsgs) {
+		cmsgs.push(["clientlist", clist]);
+	    });
 	    response.end("[]");
 	}
-	clients[id] = [];
     });
 }
 
