@@ -39,7 +39,7 @@ function post (request, response) {
     });
     request.on("end", function () {
 	var data = JSON.parse(chunks);
-	var id = request.headers["host"] + " " + request.headers["user-agent"];
+	var id = request.socket.remoteAddress + " " + request.headers["user-agent"];
 	if (data[0] !== "poll") {
 	    forEachClient(function (cname, cmsgs) {
 		if (cname !== id) {
